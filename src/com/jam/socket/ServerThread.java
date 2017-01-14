@@ -82,7 +82,7 @@ public class ServerThread extends Thread {
                 		if ( user.getDeviceMac().equals(mac) && user.getDeviceReq().equals("up") ) {
                 			sendString(mac, client_ip, "down", msg);
                 			
-                			String url = "http://192.168.0.101:3000/api/v1/devices/listen";
+                			String url = "http://183.62.232.142:3009/api/v1/devices/listen";
                 			CloseableHttpClient httpclient = HttpClients.createDefault();
                 			HttpPost post = new HttpPost(url);
                 			

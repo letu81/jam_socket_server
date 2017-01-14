@@ -16,7 +16,7 @@ public class SocketServer {
         List<User> list = new ArrayList<User>();
         // 创建绑定到特定端口的服务器套接字
         @SuppressWarnings("resource")
-        ServerSocket serverSocket = new ServerSocket(6009);
+        ServerSocket serverSocket = new ServerSocket(6001);
         System.out.println("服务端正在启动中。。。");
         // 循环监听客户端连接
         while (true) {

@@ -14,7 +14,7 @@ public class SocketClient {
 
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket("localhost", 6009);
+            Socket socket = new Socket("localhost", 6001);
             //开启一个线程接收信息，并解析
             ClientThread thread=new ClientThread(socket);
             thread.setName("Client1");
