@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
+import java.net.SocketTimeoutException;
 
 import org.json.*; 
 
@@ -38,11 +39,17 @@ public class ServerThread extends Thread {
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
                 String msg = user.getBr().readLine();
-                msg = msg.replaceAll("[\\w+]\\{", "{");
                 System.out.println(msg);
+                System.out.println("=====before=====");
+                if (msg == null) {
+                	return;
+                }
+                msg = msg.replaceAll("[\\w+]\\{", "\\{").replaceAll("\"", "'").replaceAll(" ", "");
+                msg = msg.toString().trim();
                 
+                System.out.println(msg);
+
                 String client_ip = user.getAddr().getHostAddress();
-                
                 JSONObject res = new JSONObject(msg);
                 String req = (String) res.get("req");
                 String mac = (String) res.get("mac");
@@ -65,7 +72,7 @@ public class ServerThread extends Thread {
                 if ( req.equals("down") ) {
                 	System.out.println("send msg to gateway:" + msg);
                 	if ( cmd.equals("hearbeat") ) {
-                		System.out.println("TODO");
+                		sendString(mac, client_ip, "up", msg);
                 	} else {
                 		sendString(mac, client_ip, "up", msg);
                 	}
@@ -112,11 +119,14 @@ public class ServerThread extends Thread {
         } catch (JSONException e) {
         	e.printStackTrace();
         	System.out.println("无效的数据格式");
+        } catch (SocketTimeoutException e) {
+        	e.printStackTrace();
+        	System.out.println("socket超时");
         } catch (Exception e) {
         	e.printStackTrace();
             System.out.println("socket异常");
         } finally {
-        	remove(user);
+        	//remove(user);
         	System.out.println("close socket");
         }
     }
