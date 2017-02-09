@@ -56,6 +56,7 @@ public class ServerThread extends Thread {
                 String mobile_mac = (String) res.get("mobile_mac");
                 String status = (String) res.get("status");
                 String data = (String) res.get("data");
+                String send_msg = "";
 
                 System.out.println("receive from client ip:" + client_ip
                 		+ ", mobile_mac:" + mobile_mac + ", msg:" + msg);
@@ -69,11 +70,13 @@ public class ServerThread extends Thread {
                 System.out.println("req:" + user.getDeviceReq());
                 
                 if ( req.equals("down") ) {
-                	System.out.println("send msg to gateway:" + msg);
+                	send_msg = msg.replaceAll("\'", "\"");
                 	if ( cmd.equals("hearbeat") ) {
-                		sendString(mac, "up", msg);
+                		System.out.println("send hearbeat msg to gateway:" + send_msg);
+                		sendString(mac, "up", send_msg);
                 	} else {
-                		sendString(mac, "up", msg);
+                		System.out.println("send msg to gateway:" + send_msg);
+                		sendString(mac, "up", send_msg);
                 	}
                 	//sleep(5000);
                 	//remove(user);
@@ -82,6 +85,7 @@ public class ServerThread extends Thread {
                 		System.out.println("cmd hearbeat");
                 		if ( user.getDeviceReq().equals("up") && user.getDeviceMac().equals(mac) 
                         		&& user.getDeviceIp().equals(client_ip) ) {
+                			send_msg = msg.replaceAll("\'", "\"");
                 			sendStringToGateway(user, "server receive msg:" + msg);
                 		}
                 	} else {
@@ -133,7 +137,8 @@ public class ServerThread extends Thread {
     private void sendString(String mac, String req, String msg) {
         for (User user : list) {
         	if ( user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac) ) {
-                try {
+        		System.out.println("[sendString]send msg to gateway:" + msg);
+        		try {
                     PrintWriter pw = user.getPw();
                     pw.println(msg);
                     pw.flush();
