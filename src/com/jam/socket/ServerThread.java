@@ -93,7 +93,7 @@ public class ServerThread extends Thread {
                 			System.out.println("send msg to app:" + msg);
                 			sendDownString(mac, mobile_mac, msg);
                 			
-                			String url = "http://183.62.232.142:3009/api/v1/devices/listen";
+                			String url = "http://10.88.33.209:3009/api/v1/devices/listen";
                 			CloseableHttpClient httpclient = HttpClients.createDefault();
                 			HttpPost post = new HttpPost(url);
                 			
@@ -196,7 +196,7 @@ public class ServerThread extends Thread {
     }
     
     private static String StringFilter(String str) {
-    	String regEx = "[^a-zA-Z0-9:',{}_-]";
+    	String regEx = "[^a-zA-Z0-9:',{}_-|]";
     	Pattern p = Pattern.compile(regEx);     
         Matcher m = p.matcher(str);     
         return m.replaceAll("").trim();  
