@@ -90,14 +90,14 @@ public class ServerThread extends Thread {
                 		}
                 	} else {
                 		if ( user.getDeviceMac().equals(mac) && user.getDeviceReq().equals("up") ) {
-                			sendDownString(mac, client_ip, mobile_mac, msg);
+                			System.out.println("send msg to app:" + msg);
+                			sendDownString(mac, mobile_mac, msg);
                 			
                 			String url = "http://183.62.232.142:3009/api/v1/devices/listen";
                 			CloseableHttpClient httpclient = HttpClients.createDefault();
                 			HttpPost post = new HttpPost(url);
                 			
                 			try {
-                				
                 				List<NameValuePair> params = new ArrayList<>();
                 	            params.add(new BasicNameValuePair("device_mac", mac));
                 	            params.add(new BasicNameValuePair("device_token", device_id));
@@ -149,10 +149,11 @@ public class ServerThread extends Thread {
         }
     }
     
-    private void sendDownString(String mac, String ip, String mobile_mac, String msg) {
+    private void sendDownString(String mac, String mobile_mac, String msg) {
         for (User user : list) {
         	if ( user.getDeviceReq().equals("down") && user.getDeviceMac().equals(mac)
-        			&& user.getMobileMac().equals(mobile_mac) && user.getDeviceIp().equals(ip) ) {
+        			&& user.getMobileMac().equals(mobile_mac) ) {
+        		System.out.println("[sendDownString]send msg to app:" + msg);
                 try {
                     PrintWriter pw = user.getPw();
                     pw.println(msg);
