@@ -71,9 +71,9 @@ public class ServerThread extends Thread {
                 if ( req.equals("down") ) {
                 	System.out.println("send msg to gateway:" + msg);
                 	if ( cmd.equals("hearbeat") ) {
-                		sendString(mac, client_ip, "up", msg);
+                		sendString(mac, "up", msg);
                 	} else {
-                		sendString(mac, client_ip, "up", msg);
+                		sendString(mac, "up", msg);
                 	}
                 	//sleep(5000);
                 	//remove(user);
@@ -130,10 +130,9 @@ public class ServerThread extends Thread {
         }
     }
     
-    private void sendString(String mac, String ip, String req, String msg) {
+    private void sendString(String mac, String req, String msg) {
         for (User user : list) {
-        	if ( user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac)
-        			&& user.getDeviceIp().equals(ip) ) {
+        	if ( user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac) ) {
                 try {
                     PrintWriter pw = user.getPw();
                     pw.println(msg);
