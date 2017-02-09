@@ -15,6 +15,7 @@ public class User {
     private String device_req;
     private String device_type;
     private String device_id;
+    private String mobile_mac;
     
     private Socket socket;
     private BufferedReader br;
@@ -43,6 +44,14 @@ public class User {
 
     public void setDeviceIp(String device_ip) {
         this.device_ip = device_ip;
+    }
+    
+    public String getMobileMac() {
+        return mobile_mac;
+    }
+
+    public void setMobileMac(String mobile_mac) {
+        this.mobile_mac = mobile_mac;
     }
     
     public String getDeviceReq() {

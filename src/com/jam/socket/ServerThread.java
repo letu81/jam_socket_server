@@ -40,14 +40,11 @@ public class ServerThread extends Thread {
                 // device_id:'1234', cmd:'heartbeat', status: 1,
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
-                String msg = StringFilter(user.getBr().readLine().replaceAll("\"", "\'"));
-                System.out.println(msg);
-                System.out.println("=====before=====");
+                String msg = user.getBr().readLine().replaceAll("\"", "\'");
                 if (msg == null) {
                 	return;
                 }
-                msg = msg.replaceAll("[(.)+]\\{", "\\{").trim();
-                System.out.println(msg);
+                msg = StringFilter(msg).replaceAll("[(.)+]\\{", "\\{").trim();
 
                 String client_ip = user.getAddr().getHostAddress();
                 JSONObject res = new JSONObject(msg);
@@ -56,13 +53,15 @@ public class ServerThread extends Thread {
                 String cmd = (String) res.get("cmd");
                 String device_type = (String) res.get("device_type");
                 String device_id = (String) res.get("device_id");
+                String mobile_mac = (String) res.get("mobile_mac");
                 String status = (String) res.get("status");
                 String data = (String) res.get("data");
 
-                System.out.println("receive from client ip:" + client_ip + ", msg:" + msg);
+                System.out.println("receive from client ip:" + client_ip
+                		+ ", mobile_mac:" + mobile_mac + ", msg:" + msg);
                 
                 if ( user.getDeviceMac() == null ) {
-        			setDeviceMacAndReq(user, mac, req, client_ip);
+        			setDeviceMacAndReq(user, mac, req, client_ip, mobile_mac);
         		}
                 
                 System.out.println("ip:" + user.getDeviceIp());
@@ -87,7 +86,7 @@ public class ServerThread extends Thread {
                 		}
                 	} else {
                 		if ( user.getDeviceMac().equals(mac) && user.getDeviceReq().equals("up") ) {
-                			sendString(mac, client_ip, "down", msg);
+                			sendDownString(mac, client_ip, mobile_mac, msg);
                 			
                 			String url = "http://183.62.232.142:3009/api/v1/devices/listen";
                 			CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -146,6 +145,21 @@ public class ServerThread extends Thread {
         }
     }
     
+    private void sendDownString(String mac, String ip, String mobile_mac, String msg) {
+        for (User user : list) {
+        	if ( user.getDeviceReq().equals("down") && user.getDeviceMac().equals(mac)
+        			&& user.getMobileMac().equals(mobile_mac) && user.getDeviceIp().equals(ip) ) {
+                try {
+                    PrintWriter pw = user.getPw();
+                    pw.println(msg);
+                    pw.flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
     private void sendStringToGateway(User user2, String msg) {
     	try {
             PrintWriter pw = user.getPw();
@@ -169,10 +183,11 @@ public class ServerThread extends Thread {
 		}
     }
 
-    private void setDeviceMacAndReq(User user2, String mac, String req, String ip) {
+    private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
         user2.setDeviceMac(mac);
         user2.setDeviceReq(req);
         user2.setDeviceIp(ip);
+        user2.setMobileMac(mobile_mac);
     }
     
     private static String StringFilter(String str) {
