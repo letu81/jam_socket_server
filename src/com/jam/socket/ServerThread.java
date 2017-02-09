@@ -3,6 +3,8 @@ package com.jam.socket;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.net.SocketTimeoutException;
 
@@ -38,15 +40,13 @@ public class ServerThread extends Thread {
                 // device_id:'1234', cmd:'heartbeat', status: 1,
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
-                String msg = user.getBr().readLine();
+                String msg = StringFilter(user.getBr().readLine().replaceAll("\"", "\'"));
                 System.out.println(msg);
                 System.out.println("=====before=====");
                 if (msg == null) {
                 	return;
                 }
-                msg = msg.replaceAll("[\\w+]\\{", "\\{").replaceAll("\"", "'").replaceAll(" ", "");
-                msg = msg.toString().trim();
-                
+                msg = msg.replaceAll("[(.)+]\\{", "\\{").trim();
                 System.out.println(msg);
 
                 String client_ip = user.getAddr().getHostAddress();
@@ -173,5 +173,12 @@ public class ServerThread extends Thread {
         user2.setDeviceMac(mac);
         user2.setDeviceReq(req);
         user2.setDeviceIp(ip);
+    }
+    
+    private static String StringFilter(String str) {
+    	String regEx = "[^a-zA-Z0-9:',{}_-]";
+    	Pattern p = Pattern.compile(regEx);     
+        Matcher m = p.matcher(str);     
+        return m.replaceAll("").trim();  
     }
 }
