@@ -79,7 +79,7 @@ public class ServerThread extends Thread {
                 		sendString(mac, "up", send_msg);
                 	}
                 } else {
-                	if ( cmd.equals("hearbeat") ) {
+                	if ( cmd.equals("hearbeat") || cmd.length() == 0 ) {
                 		System.out.println("cmd hearbeat");
                 		if ( user.getDeviceReq().equals("up") && user.getDeviceMac().equals(mac) 
                         		&& user.getDeviceIp().equals(client_ip) ) {
