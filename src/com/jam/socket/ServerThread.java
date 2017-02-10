@@ -41,8 +41,6 @@ public class ServerThread extends Thread {
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
                 String msg = user.getBr().readLine().replaceAll("\"", "\'");
-                System.out.println(msg==null);
-                System.out.println(msg.length());
                 if (msg == null || msg.length() == 0 ) {
                 	return;
                 }
