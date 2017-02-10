@@ -41,7 +41,9 @@ public class ServerThread extends Thread {
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
                 String msg = user.getBr().readLine().replaceAll("\"", "\'");
-                if (msg == null) {
+                System.out.println(msg==null);
+                System.out.println(msg.length());
+                if (msg == null || msg.length() == 0 ) {
                 	return;
                 }
                 msg = StringFilter(msg).replaceAll("[(.)+]\\{", "\\{").trim();
@@ -78,8 +80,6 @@ public class ServerThread extends Thread {
                 		System.out.println("send msg to gateway:" + send_msg);
                 		sendString(mac, "up", send_msg);
                 	}
-                	//sleep(5000);
-                	//remove(user);
                 } else {
                 	if ( cmd.equals("hearbeat") ) {
                 		System.out.println("cmd hearbeat");
@@ -108,7 +108,6 @@ public class ServerThread extends Thread {
                 	            CloseableHttpResponse response = httpclient.execute(post);
                 	            try {
                 	                System.out.println("返回status:" + response.getStatusLine());
-                	                
                 	            } finally {
                 	                response.close();
                 	            }
@@ -129,7 +128,7 @@ public class ServerThread extends Thread {
         	e.printStackTrace();
             System.out.println("socket异常");
         } finally {
-        	//remove(user);
+        	remove(user);
         	System.out.println("close socket");
         }
     }
@@ -196,7 +195,7 @@ public class ServerThread extends Thread {
     }
     
     private static String StringFilter(String str) {
-    	String regEx = "[^a-zA-Z0-9:',{}_-|]";
+    	String regEx = "[^a-zA-Z0-9-:',{}_|]";
     	Pattern p = Pattern.compile(regEx);     
         Matcher m = p.matcher(str);     
         return m.replaceAll("").trim();  
