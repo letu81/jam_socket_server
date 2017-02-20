@@ -57,11 +57,12 @@ public class ServerThread extends Thread {
                 String status = (String) res.get("status");
                 String data = (String) res.get("data");
                 String send_msg = "";
+                String default_mobile_mac = "11-22-33-44-55-66";
 
                 System.out.println("receive from client ip:" + client_ip
                 		+ ", mobile_mac:" + mobile_mac + ", msg:" + msg);
                 
-                if ( user.getDeviceMac() == null ) {
+                if ( user.getDeviceMac() == null || user.getMobileMac() == null || user.getMobileMac() != default_mobile_mac ) {
         			setDeviceMacAndReq(user, mac, req, client_ip, mobile_mac);
         		}
                 
