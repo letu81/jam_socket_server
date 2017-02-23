@@ -21,7 +21,7 @@ public class SocketServer {
         // 循环监听客户端连接
         while (true) {
             Socket socket = serverSocket.accept();
-            socket.setSoTimeout(3 * 60 * 1000);
+            socket.setSoTimeout(2 * 60 * 1000);
             // 每接受一个线程，就随机生成一个一个新用户
             User user = new User("user" + Math.round(Math.random() * 100),socket);
 

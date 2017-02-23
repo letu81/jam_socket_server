@@ -26,7 +26,7 @@ import org.apache.http.message.BasicNameValuePair;
 public class ServerThread extends Thread {
 
     private User user;
-    private List<User> list;
+    private static List<User> list;
 
     public ServerThread(User user, List<User> list) {
         this.user = user;
@@ -73,8 +73,16 @@ public class ServerThread extends Thread {
                 if ( req.equals("down") ) {
                 	send_msg = msg.replaceAll("\'", "\"");
                 	if ( cmd.equals("hearbeat") ) {
-                		System.out.println("send hearbeat msg to gateway:" + send_msg);
-                		sendString(mac, "up", send_msg);
+                		boolean isOnline = checkGatewayIsOnline(mac, mobile_mac);
+                		if ( isOnline ) {
+                			System.out.println("online---");
+                			sendString(mac, "down", send_msg);
+                			sendDownString(mac, mobile_mac, send_msg);
+                		} else {
+                			System.out.println("not online----");
+                			send_msg = msg.replaceAll("'status':'1'", "'status':'0'");
+                			sendDownString(mac, mobile_mac, send_msg);
+                		}
                 	} else {
                 		System.out.println("send msg to gateway:" + send_msg);
                 		sendString(mac, "up", send_msg);
@@ -187,10 +195,20 @@ public class ServerThread extends Thread {
     }
 
     private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
-        user2.setDeviceMac(mac);
-        user2.setDeviceReq(req);
-        user2.setDeviceIp(ip);
-        user2.setMobileMac(mobile_mac);
+    	if (list.size() > 1) {
+	    	for (User user : list) {
+	    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac)
+	        			&& user.getMobileMac().equals(mobile_mac) ) {
+	    			list.remove(user);
+	    			System.out.println("user NO is " + user.getToken());
+	            }
+	    	}
+    	}
+    	System.out.println("total users is " + String.valueOf(list.size()));
+    	user2.setDeviceMac(mac);
+		user2.setDeviceReq(req);
+		user2.setDeviceIp(ip);
+		user2.setMobileMac(mobile_mac);
     }
     
     private static String StringFilter(String str) {
@@ -198,5 +216,17 @@ public class ServerThread extends Thread {
     	Pattern p = Pattern.compile(regEx);     
         Matcher m = p.matcher(str);     
         return m.replaceAll("").trim();  
+    }
+    
+    private static boolean checkGatewayIsOnline(String mac, String mobile_mac) {
+    	boolean isOnline = false;
+    	for (User user : list) {
+        	if ( user.getDeviceReq().equals("up") && user.getDeviceMac().equals(mac)
+        			&& user.getMobileMac().equals(mobile_mac) ) {
+        		isOnline = true;
+        		break;
+            }
+        }
+    	return isOnline;
     }
 }
