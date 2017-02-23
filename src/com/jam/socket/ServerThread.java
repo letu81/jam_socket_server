@@ -142,7 +142,7 @@ public class ServerThread extends Thread {
     
     private void sendString(String mac, String req, String msg) {
         for (User user : list) {
-        	if ( user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac) ) {
+        	if ( user.getDeviceMac() != null && user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac) ) {
         		System.out.println("[sendString]send msg to gateway:" + msg);
         		try {
                     PrintWriter pw = user.getPw();
@@ -157,7 +157,7 @@ public class ServerThread extends Thread {
     
     private void sendDownString(String mac, String mobile_mac, String msg) {
         for (User user : list) {
-        	if ( user.getDeviceReq().equals("down") && user.getDeviceMac().equals(mac)
+        	if ( user.getDeviceMac() != null && user.getDeviceReq().equals("down") && user.getDeviceMac().equals(mac)
         			&& user.getMobileMac().equals(mobile_mac) ) {
         		System.out.println("[sendDownString]send msg to app:" + msg);
                 try {
