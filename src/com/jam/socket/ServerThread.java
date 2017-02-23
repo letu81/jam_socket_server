@@ -195,20 +195,24 @@ public class ServerThread extends Thread {
     }
 
     private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
+    	boolean userExist = false;
     	if (list.size() > 1) {
 	    	for (User user : list) {
 	    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac)
-	        			&& user.getMobileMac().equals(mobile_mac) ) {
-	    			System.out.println("remove user mac: " + user.getDeviceMac() + ", req:" + req +", mobile_mac:" + mobile_mac);
-	    			list.remove(user);
+	        			&& user.getMobileMac().equals(mobile_mac) && user.getDeviceIp().equals(ip) ) {
+	    			userExist = true;
+	    			System.out.println("user exist, mac: " + user.getDeviceMac() + ", req:" + req +", mobile_mac:" + mobile_mac);
+	    			list.remove(user2);
 	            }
 	    	}
     	}
     	System.out.println("total users is " + String.valueOf(list.size()));
-    	user2.setDeviceMac(mac);
-		user2.setDeviceReq(req);
-		user2.setDeviceIp(ip);
-		user2.setMobileMac(mobile_mac);
+    	if (!userExist) {
+    		user2.setDeviceMac(mac);
+    		user2.setDeviceReq(req);
+    		user2.setDeviceIp(ip);
+    		user2.setMobileMac(mobile_mac);
+    	}
     }
     
     private static String StringFilter(String str) {
