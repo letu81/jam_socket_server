@@ -205,7 +205,7 @@ public class ServerThread extends Thread {
     		if ( req.equals("up") ) {
     			for (User user : list) {
     	    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && 
-    	    			 user.getDeviceMac().equals(mac)	) {
+    	    			 user.getDeviceMac().equals(mac) ) {
     	    			userExist = true;
     	    			user.setDeviceIp(ip);
         	    		user.setMobileMac(mobile_mac);
@@ -214,7 +214,7 @@ public class ServerThread extends Thread {
     	    			remove(user2);
     	            }
     	    	}
-    			if ( !userExist ) {
+    			if ( !userExist || user2.getDeviceReq() == null ) {
     				user2.setDeviceMac(mac);
     			    user2.setDeviceReq(req);
     			    user2.setDeviceIp(ip);
@@ -229,7 +229,7 @@ public class ServerThread extends Thread {
 		    			remove(user2);
 		            }
 		    	}
-    			if ( !userExist ) {
+    			if ( !userExist || user2.getDeviceReq() == null ) {
     				user2.setDeviceMac(mac);
     			    user2.setDeviceReq(req);
     			    user2.setDeviceIp(ip);
