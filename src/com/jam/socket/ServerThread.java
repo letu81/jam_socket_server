@@ -196,11 +196,17 @@ public class ServerThread extends Thread {
 
     private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
     	boolean userExist = false;
-    	if (list.size() > 1) {
-    		if (req == "up") {
+    	if ( list.size() == 1 ) {
+    		user2.setDeviceMac(mac);
+		    user2.setDeviceReq(req);
+		    user2.setDeviceIp(ip);
+		    user2.setMobileMac(mobile_mac);
+    	} else {
+    		if ( req.equals("up") ) {
     			for (User user : list) {
     	    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && 
     	    			 user.getDeviceMac().equals(mac)	) {
+    	    			userExist = true;
     	    			user.setDeviceIp(ip);
         	    		user.setMobileMac(mobile_mac);
     	    			System.out.println("update user mobile_mac and ip, mac: " + user.getDeviceMac() 
@@ -208,8 +214,14 @@ public class ServerThread extends Thread {
     	    			list.remove(user2);
     	            }
     	    	}
+    			if ( !userExist ) {
+    				user2.setDeviceMac(mac);
+    			    user2.setDeviceReq(req);
+    			    user2.setDeviceIp(ip);
+    			    user2.setMobileMac(mobile_mac);
+    			}
     		} else {
-		    	for (User user : list) {
+    			for (User user : list) {
 		    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac)
 		        			&& user.getMobileMac().equals(mobile_mac) ) {
 		    			userExist = true;
@@ -217,12 +229,10 @@ public class ServerThread extends Thread {
 		    			list.remove(user);
 		            }
 		    	}
-		    	if (userExist) {
-		    		user2.setDeviceMac(mac);
-		    		user2.setDeviceReq(req);
-		    		user2.setDeviceIp(ip);
-		    		user2.setMobileMac(mobile_mac);
-		    	}
+    			user2.setDeviceMac(mac);
+	    		user2.setDeviceReq(req);
+	    		user2.setDeviceIp(ip);
+	    		user2.setMobileMac(mobile_mac);
     		}
     	}
     	System.out.println("total users is " + String.valueOf(list.size()));
