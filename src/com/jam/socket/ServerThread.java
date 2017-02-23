@@ -199,8 +199,8 @@ public class ServerThread extends Thread {
 	    	for (User user : list) {
 	    		if ( user.getDeviceReq() != null && user.getDeviceReq().equals(req) && user.getDeviceMac().equals(mac)
 	        			&& user.getMobileMac().equals(mobile_mac) ) {
+	    			System.out.println("remove user mac: " + user.getDeviceMac() + ", req:" + req +", mobile_mac:" + mobile_mac);
 	    			list.remove(user);
-	    			System.out.println("user NO is " + user.getToken());
 	            }
 	    	}
     	}
