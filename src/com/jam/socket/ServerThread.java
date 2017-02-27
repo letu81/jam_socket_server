@@ -135,7 +135,7 @@ public class ServerThread extends Thread {
         	e.printStackTrace();
             System.out.println("socket异常");
         } finally {
-        	//remove(user);
+        	remove(user);
         	System.out.println("close socket");
         }
     }
@@ -211,7 +211,7 @@ public class ServerThread extends Thread {
         	    		user.setMobileMac(mobile_mac);
     	    			System.out.println("update user mobile_mac and ip, mac: " + user.getDeviceMac() 
     	    				+ ", req:" + req +", new mobile_mac:" + mobile_mac);
-    	    			remove(user2);
+    	    			//remove(user2);
     	            }
     	    	}
     			if ( !userExist || user2.getDeviceReq() == null ) {
@@ -226,10 +226,10 @@ public class ServerThread extends Thread {
 		        			&& user.getMobileMac().equals(mobile_mac) ) {
 		    			userExist = true;
 		    			System.out.println("user exist, mac: " + user.getDeviceMac() + ", req:" + req +", mobile_mac:" + mobile_mac);
-		    			remove(user2);
+		    			remove(user);
 		            }
 		    	}
-    			if ( !userExist || user2.getDeviceReq() == null ) {
+    			if ( !userExist ) {
     				user2.setDeviceMac(mac);
     			    user2.setDeviceReq(req);
     			    user2.setDeviceIp(ip);
