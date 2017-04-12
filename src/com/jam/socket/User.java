@@ -117,7 +117,7 @@ public class User {
         this.device_ip = socket.getInetAddress().getHostAddress();
         this.br = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
-        this.pw = new PrintWriter(socket.getOutputStream());
+        this.pw = new PrintWriter(socket.getOutputStream(), true);
     }
     
 	public InetAddress getInetAddress() {
