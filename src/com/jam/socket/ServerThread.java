@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Date;
 
 import java.text.SimpleDateFormat;
-
+import java.net.Socket;
 import java.net.SocketTimeoutException;
 
 import org.json.*; 
@@ -61,7 +61,11 @@ public class ServerThread extends Thread {
 
 	public void run() {
         try {
-            while ((msg = user.getBr().readLine()) != null) {
+        	Socket mSocket = user.getSocket();
+        	if ( mSocket == null || mSocket.isClosed() || user.getBr() == null ) {
+        		return;
+        	}
+            while ( (msg = user.getBr().readLine()) != null ) {
                 // 信息的格式：{req:'up', mac:'mac', device_type:'gateway', 
                 // device_id:'1234', cmd:'heartbeat', status: 1,
                 // data: '12345678'}
@@ -106,12 +110,9 @@ public class ServerThread extends Thread {
                 
                 if ( req.equals("down") ) {
                 	System.out.println("[down]mac_and_mobile_mac is :" +  mac_and_mobile_mac);
+                    downThreads.put(mac_and_mobile_mac, user);
                 	send_msg = msg.replaceAll("\'", "\"");
-                	if ( !downThreads.containsKey(mac_and_mobile_mac) ) {
-                		downThreads.put(mac_and_mobile_mac, user);
-                	} else {
-                		downThreads.replace(mac_and_mobile_mac, user);
-                	}
+                	
                 	System.out.println("是否有对应的上报线程:" + String.valueOf(upThreads.containsKey(mac)));
                 	if ( upThreads.containsKey(mac) ) {
                 		if ( cmd.equals("hearbeat") ) {
@@ -127,15 +128,11 @@ public class ServerThread extends Thread {
                 		}
                 	} else {
                 		System.out.println("gateway not online, mac is:" + mac);
-                		send_msg = msg.replaceAll("'status':'1'", "'status':'2'");
+                		send_msg = msg.replaceAll("'req':'down'", "'req':'up'").replaceAll("'status':'1'", "'status':'2'");
                 		sendStringToUser(downThreads.get(mac_and_mobile_mac), send_msg);
                 	}
                 } else {
-                	if ( !upThreads.containsKey(mac) ) {
-                		upThreads.put(mac, user);
-                	} else {
-                		upThreads.replace(mac, user);
-                	}         	
+                	upThreads.put(mac, user);
                 	System.out.println("是否有对应的下发线程:" + String.valueOf(downThreads.containsKey(mac_and_mobile_mac)));
                 	System.out.println("是否有设置过对应的网关端口:" + String.valueOf(gateways.containsKey(mac)));
                 	
