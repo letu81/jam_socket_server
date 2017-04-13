@@ -43,6 +43,7 @@ public class SocketServer {
             ServerThread thread = new ServerThread(user, list, port, gateways, upThreads, downThreads);
             try {
             	thread.start();
+            	user.setThread(thread);
             } catch (OutOfMemoryError e) {
             	MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             	MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();

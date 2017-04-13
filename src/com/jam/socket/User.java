@@ -21,6 +21,7 @@ public class User {
     private BufferedReader br;
     private PrintWriter pw;
     private InetAddress addr;
+    private Thread thread;
 
     public String getToken() {
         return token;
@@ -102,6 +103,14 @@ public class User {
         this.pw = pw;
     }
     
+    public Thread getThread() {
+        return thread;
+    }
+
+    public void setThread(Thread thread) {
+        this.thread = thread;
+    }
+    
     public InetAddress getAddr() {
         return addr;
     }
@@ -116,7 +125,7 @@ public class User {
         this.addr = socket.getInetAddress();
         this.device_ip = socket.getInetAddress().getHostAddress();
         this.br = new BufferedReader(new InputStreamReader(
-                socket.getInputStream()));
+                socket.getInputStream(), "ISO-8859-1"));
         this.pw = new PrintWriter(socket.getOutputStream(), true);
     }
     

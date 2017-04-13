@@ -3,6 +3,7 @@ package com.jam.socket;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.List;
@@ -70,6 +71,7 @@ public class ServerThread extends Thread {
                 // device_id:'1234', cmd:'heartbeat', status: 1,
                 // data: '12345678'}
                 // 不断地读取客户端发过来的信息
+            	System.out.println(msg);
                 msg = msg.replaceAll("\"", "\'");
                 parseData(msg);
                 if ( msg.length() == 0 ) {
@@ -89,7 +91,13 @@ public class ServerThread extends Thread {
                 String status = (String) res.get("status");
                 String data = (String) res.get("data");
                 
-                System.out.println("data is :" +  data);
+                if ( req.equals("down") && cmd.equals("socket_close") ) {
+                	remove(user);
+                }
+                
+                if ( req.equals("down") && cmd.equals("all_socket_close") ) {
+                	removeAll("down", mac);
+                }
                 
                 String send_msg = "";
                 String default_mobile_mac = "11-22-33-44-55-66";
@@ -169,6 +177,7 @@ public class ServerThread extends Thread {
                 		if ( downThreads.containsKey(mac_and_mobile_mac) ) {
                 			sendStringToUser(downThreads.get(mac_and_mobile_mac), msg);
                 		}
+
                 		if ( status.equals("1") && Arrays.asList(cmdArray).contains(cmd) ) {
                 			String url = apiUrl + "/api/v1/devices/listen";
                 			CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -178,8 +187,14 @@ public class ServerThread extends Thread {
             	            params.add(new BasicNameValuePair("device_token", device_id));
             	            params.add(new BasicNameValuePair("device_cmd", cmd));
             	            
-            	            String device_num = ""; // TODO get device ID
+            	            String device_num = ""; 
                 			if ( data.trim().length() > 0 ) {
+                				String temp = data.substring(4).trim();
+                				if ( temp.length() == 1 ) {
+                					device_num = String.valueOf((int) temp.charAt(0));
+                				} else if ( data.trim().length() == 0 ) {
+                					
+                				}
                 				if ( cmd.contains("finger") ) {
                 					params.add(new BasicNameValuePair("device_num", device_num));
                 					params.add(new BasicNameValuePair("lock_type", "1"));
@@ -208,7 +223,7 @@ public class ServerThread extends Thread {
                 	    }
                 	}
                 }
-                sleep(50);
+               sleep(50);
             }
         } catch (JSONException e) {
         	remove(user);
@@ -218,6 +233,10 @@ public class ServerThread extends Thread {
         	remove(user);
         	e.printStackTrace();
         	System.out.println("socket超时");
+        } catch (InterruptedException e) {
+        	remove(user);
+        	e.printStackTrace();
+            System.out.println("socket中断");
         } catch (Exception e) {
         	remove(user);
         	e.printStackTrace();
@@ -237,50 +256,45 @@ public class ServerThread extends Thread {
     }
     
     private void remove(User user2) {
+    	System.out.println("=========remove user==========");
 	    try {
-	    	if ( user2.getDeviceReq().equals("up") ) {
-	    		if ( upThreads.containsKey( user2.getDeviceMac() ) ) {
-	    			try {
-	    				upThreads.remove( user2.getDeviceMac() );
-	    			} catch (Exception e) {
-	    				e.printStackTrace();
-	    			}
-	    		}
-	    	}
+	    	user2.getThread().interrupt();
 	    	user2.getBr().close();
 	    	user2.getPw().close();
 			user2.getSocket().close();
+	    } catch (NullPointerException e) {
+	    	e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
 			list.remove(user2);
 		}
     }
+    
+    private void removeAll(String req, String mac) {
+    	for (int i = 0; i < list.size(); i++) {
+		    User tu = list.get(i);
+		    if ( tu !=null && tu.getDeviceReq().equals(req) && tu.getDeviceMac().equals(mac) ) {
+		    	remove(tu);
+		    }
+		}
+    }
 
     private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
-    	if ( list.size() == 1 ) {
-    		user2.setDeviceMac(mac);
-		    user2.setDeviceReq(req);
-		    user2.setDeviceIp(ip);
-		    user2.setMobileMac(mobile_mac);
-    	} else {
-    		if ( req.equals("up") ) {
-    			if ( !upThreads.containsKey(mac) ) {
-    				user2.setDeviceMac(mac);
-    			    user2.setDeviceReq(req);
-    			    user2.setDeviceIp(ip);
-    			    user2.setMobileMac(mobile_mac);
-    			} else {
-    				user2.setDeviceIp(ip);
-    			    user2.setMobileMac(mobile_mac);
-    			}
-    		} else {
-    			user2.setDeviceMac(mac);
-			    user2.setDeviceReq(req);
-			    user2.setDeviceIp(ip);
-			    user2.setMobileMac(mobile_mac);
-    		}
+    	user2.setDeviceMac(mac);
+		user2.setDeviceReq(req);
+		user2.setDeviceIp(ip);
+		user2.setMobileMac(mobile_mac);
+    	if ( list.size() > 1 ) {
     		System.out.println("total users is " + String.valueOf(list.size()));
+    		for (int i = 0; i < list.size(); i++) {
+    		    User tu = list.get(i);
+    		    Socket tSocket = tu.getSocket();
+    		    if ( tSocket.isClosed() ) {
+    		    	list.remove(i);
+    		    }
+    		    System.out.println("user mac: " + tu.getDeviceMac() + ", req:" + tu.getDeviceReq() + ", mobile_mac:" + tu.getMobileMac() + ",socket isClosed:" + String.valueOf(tSocket.isClosed()) );
+    		}
     	}
     }
     
@@ -293,12 +307,42 @@ public class ServerThread extends Thread {
     
     private void parseData(String msg) throws DecoderException, UnsupportedEncodingException {
     	String[] temp = msg.split("data");
+    	System.out.println( "=======data[1]=====" );
+    	System.out.println( temp[1] );
         String regEx = "[a-zA-Z0-9-:.',{}_|]";
     	Pattern p = Pattern.compile(regEx);     
         Matcher m = p.matcher(temp[1]);
         String data = m.replaceAll("").trim();
         if ( data.length() > 0 ) {
-        	System.out.println(data.getBytes("UTF-8") );
+        	System.out.println( "=======start=====" );
+        	byte[] bytes = data.getBytes();
+        	for ( int j = 0; j < bytes.length; j++ ) {
+        		 System.out.println(  bytes[j] );
+        	}
+        	
+        	StringBuilder sb = new StringBuilder();
+            for (char c : data.toCharArray())
+            sb.append((int)c);
+
+            //System.out.println ( new BigInteger(1, bytes).toString(16) );
+                  
+            System.out.println(  bytesToHex(data.getBytes()) );
+            System.out.println ( sb.toString() );
+            //System.out.println(  Integer.parseInt("6a2", 16)   );
+            //System.out.println(  Integer.parseInt(bytesToHex(data.getBytes()), 16)   );
+            System.out.println( "=======end=====" );
         }
+    }
+    
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        System.out.println( "length:" + bytes.length );
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 }
