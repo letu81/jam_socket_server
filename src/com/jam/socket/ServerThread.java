@@ -169,6 +169,8 @@ public class ServerThread extends Thread {
                 	            } finally {
                 	                response.close();
                 	            }
+            	            } catch (Exception e) {
+            	            	e.printStackTrace();
                 			} finally {
                 				httpClient.close();
                 	        }
@@ -217,6 +219,8 @@ public class ServerThread extends Thread {
                 	            } finally {
                 	                response.close();
                 	            }
+                			} catch (Exception pe) {
+            	            	pe.printStackTrace();
                 			} finally {
                 	            httpclient.close();
                 	        }
