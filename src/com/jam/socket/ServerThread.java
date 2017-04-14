@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -90,15 +91,7 @@ public class ServerThread extends Thread {
                 String mobile_mac = (String) res.get("mobile_mac");
                 String status = (String) res.get("status");
                 String data = (String) res.get("data");
-                
-                if ( req.equals("down") && cmd.equals("socket_close") ) {
-                	remove(user);
-                }
-                
-                if ( req.equals("down") && cmd.equals("all_socket_close") ) {
-                	removeAll("down", mac);
-                }
-                
+
                 String send_msg = "";
                 String default_mobile_mac = "11-22-33-44-55-66";
                 
@@ -117,6 +110,10 @@ public class ServerThread extends Thread {
                 System.out.println("req:" + user.getDeviceReq());
                 
                 if ( req.equals("down") ) {
+                    if ( cmd.equals("all_socket_close") ) {
+                    	removeAll("down", mac);
+                    }
+                    
                 	System.out.println("[down]mac_and_mobile_mac is :" +  mac_and_mobile_mac);
                     downThreads.put(mac_and_mobile_mac, user);
                 	send_msg = msg.replaceAll("\'", "\"");
@@ -225,6 +222,7 @@ public class ServerThread extends Thread {
                 	            httpclient.close();
                 	        }
                 	    }
+                    	removeAll("down", mac);
                 	}
                 }
                sleep(50);
@@ -262,13 +260,15 @@ public class ServerThread extends Thread {
     private void remove(User user2) {
     	System.out.println("=========remove user==========");
 	    try {
-	    	user2.getThread().interrupt();
 	    	user2.getBr().close();
 	    	user2.getPw().close();
 			user2.getSocket().close();
+			user2.getThread().interrupt();
 	    } catch (NullPointerException e) {
+	    	System.out.println("=========remove user=NullPointerException=========");
 	    	e.printStackTrace();
 		} catch (IOException e) {
+			System.out.println("=========remove user=IOException=========");
 			e.printStackTrace();
 		} finally {
 			list.remove(user2);
@@ -276,13 +276,43 @@ public class ServerThread extends Thread {
     }
     
     private void removeAll(String req, String mac) {
-    	for (int i = 0; i < list.size(); i++) {
-		    User tu = list.get(i);
-		    if ( tu !=null && tu.getDeviceReq().equals(req) && tu.getDeviceMac().equals(mac) ) {
-		    	remove(tu);
-		    }
-		}
+    	Thread t = null;
+        try {    
+            t = new Thread() {    
+                //对于方法进行了同步操作，锁对象就是线程本身  
+                public synchronized void run() {    
+                	try {
+                		Collections.reverse(list);
+                		int firstIndex = 0;
+                    	for (int i = 0; i < list.size(); i++) {
+                		    User tu = list.get(i);
+                		    if ( tu !=null && tu.getDeviceReq().equals(req) && tu.getDeviceMac().equals(mac) ) {
+                		    	if ( firstIndex == 0 ) {
+                		    		firstIndex = i;
+                		    	} else if ( firstIndex > 0 ) {
+                		    		remove(tu);
+                		    	}
+                		    }
+                		}
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }    
+            };    
+            //开始计数  
+            t.start();   
+            //停止线程的运行  
+            
+        } catch (Throwable e) {      
+            e.printStackTrace();    
+        }  finally {
+        	t.stop();
+        }
     }
+    
+    
+    
+    
 
     private void setDeviceMacAndReq(User user2, String mac, String req, String ip, String mobile_mac) {
     	user2.setDeviceMac(mac);
@@ -296,6 +326,8 @@ public class ServerThread extends Thread {
     		    Socket tSocket = tu.getSocket();
     		    if ( tSocket.isClosed() ) {
     		    	list.remove(i);
+    		    } else if ( tu.getDeviceMac() == null ) {
+    		    	remove(tu);
     		    }
     		    System.out.println("user mac: " + tu.getDeviceMac() + ", req:" + tu.getDeviceReq() + ", mobile_mac:" + tu.getMobileMac() + ",socket isClosed:" + String.valueOf(tSocket.isClosed()) );
     		}
