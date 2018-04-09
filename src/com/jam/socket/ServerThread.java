@@ -20,7 +20,9 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import org.json.*; 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -66,14 +68,8 @@ public class ServerThread extends Thread {
         try {
         	Socket mSocket = user.getSocket();
         	if ( mSocket == null || mSocket.isClosed() || user.getBr() == null ) {
-                user.getThread().interrupt();
-                System.out.println("===toto");
         		return;
         	}
-            if ( user.getBr().read()==-1 ) {
-                remove(user);
-                return;
-            }
             boolean done = mSocket.isConnected();
             while ( done ) {
                 if ( user.getBr().read()==-1 ) {
@@ -86,10 +82,16 @@ public class ServerThread extends Thread {
                         // device_id:'1234', cmd:'heartbeat', status: 1,
                         // data: '12345678'}
                         // 不断地读取客户端发过来的信息
-                        //System.out.println(msg);
+                        System.out.println(msg);
+                        if ( !msg.startsWith("{") ) {
+                           msg = "{".concat(msg);
+                        }
+                        if ( !msg.endsWith("}") ) {
+                           msg = msg.concat("}");
+                        }
                         msg = msg.replaceAll("\"", "\'");
                         //parseData(msg);
-                        if ( msg.length() == 0 ) {
+                        if ( msg.length() < 10 ) {
                             return;
                         }
                         msg = StringFilter(msg).replaceAll("[(.)+]\\{", "\\{").trim();
@@ -279,6 +281,7 @@ public class ServerThread extends Thread {
 	    	user2.getBr().close();
 	    	user2.getPw().close();
 			user2.getSocket().close();
+            gateways.remove(user2.getDeviceMac());
 	    } catch (NullPointerException e) {
 	    	e.printStackTrace();
 		} catch (IOException e) {
