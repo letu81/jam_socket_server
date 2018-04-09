@@ -33,7 +33,7 @@ public class SocketServer {
         // 循环监听客户端连接
         while (true) {
             Socket socket = serverSocket.accept();
-            socket.setSoTimeout(20 * 1000); //20秒超时
+            socket.setSoTimeout(5 * 1000); //5秒超时
             // 每接受一个线程，就随机生成一个一个新用户
             User user = new User("user " + socket.hashCode(), socket);
             
