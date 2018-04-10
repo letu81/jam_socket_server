@@ -365,31 +365,37 @@ public class ServerThread extends Thread {
     }
     
     private void parseData(String msg) throws DecoderException, UnsupportedEncodingException {
-    	String[] temp = msg.split("data");
-    	System.out.println( "=======data[1]=====" );
-    	System.out.println( temp[1] );
-        String regEx = "[a-zA-Z0-9-:.',{}_|]";
-    	Pattern p = Pattern.compile(regEx);     
-        Matcher m = p.matcher(temp[1]);
-        String data = m.replaceAll("").trim();
-        if ( data.length() > 0 ) {
-        	System.out.println( "=======start=====" );
-        	byte[] bytes = data.getBytes();
-        	for ( int j = 0; j < bytes.length; j++ ) {
-        		 System.out.println(  bytes[j] );
-        	}
-        	
-        	StringBuilder sb = new StringBuilder();
-            for (char c : data.toCharArray())
-            sb.append((int)c);
+        try {
+        	String[] temp = msg.split("data");
+        	System.out.println( "=======data[1]=====" );
+        	System.out.println( temp[1] );
+            String regEx = "[a-zA-Z0-9-:.',{}_|]";
+        	Pattern p = Pattern.compile(regEx);     
+            Matcher m = p.matcher(temp[1]);
+            String data = m.replaceAll("").trim();
+            System.out.println( "============" );
+            System.out.println( data.length() );
+            if ( data.length() > 0 ) {
+            	System.out.println( "=======start=====" );
+            	byte[] bytes = data.getBytes();
+            	for ( int j = 0; j < bytes.length; j++ ) {
+            		 System.out.println(  bytes[j] );
+            	}
+            	
+            	StringBuilder sb = new StringBuilder();
+                for (char c : data.toCharArray())
+                sb.append((int)c);
 
-            //System.out.println ( new BigInteger(1, bytes).toString(16) );
-                  
-            System.out.println(  bytesToHex(data.getBytes()) );
-            System.out.println ( sb.toString() );
-            //System.out.println(  Integer.parseInt("6a2", 16)   );
-            //System.out.println(  Integer.parseInt(bytesToHex(data.getBytes()), 16)   );
-            System.out.println( "=======end=====" );
+                //System.out.println ( new BigInteger(1, bytes).toString(16) );
+                      
+                System.out.println(  bytesToHex(data.getBytes()) );
+                System.out.println ( sb.toString() );
+                //System.out.println(  Integer.parseInt("6a2", 16)   );
+                //System.out.println(  Integer.parseInt(bytesToHex(data.getBytes()), 16)   );
+                System.out.println( "=======end=====" );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
