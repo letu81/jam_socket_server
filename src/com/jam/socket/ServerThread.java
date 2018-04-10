@@ -74,7 +74,7 @@ public class ServerThread extends Thread {
             while ( done ) {
                 if ( user.getBr().read()==-1 ) {
                     done = false;
-                    remove(user);
+                    new Thread(new removeTask(user)).start();
                     break;
                 } else {
                     while ( (msg = user.getBr().readLine()) != null ) {
@@ -83,18 +83,18 @@ public class ServerThread extends Thread {
                         // data: '12345678'}
                         // 不断地读取客户端发过来的信息
                         System.out.println(msg);
-                        if ( !msg.startsWith("{") ) {
-                           msg = "{".concat(msg);
-                        }
-                        if ( !msg.endsWith("}") ) {
-                           msg = msg.concat("}");
-                        }
                         msg = msg.replaceAll("\"", "\'");
                         //parseData(msg);
                         if ( msg.length() < 10 ) {
                             return;
                         }
                         msg = StringFilter(msg).replaceAll("[(.)+]\\{", "\\{").trim();
+                        if ( !msg.startsWith("{") ) {
+                           msg = "{".concat(msg);
+                        }
+                        if ( !msg.endsWith("}") ) {
+                           msg = msg.concat("}");
+                        }
                         System.out.println(msg);
                         
                         String client_ip = user.getAddr().getHostAddress();
@@ -249,15 +249,18 @@ public class ServerThread extends Thread {
                 }
             }
         } catch (JSONException e) {
-            remove(user);
+            //remove(user);
+            new Thread(new removeTask(user)).start();
         	e.printStackTrace();
             System.out.println("socket json解析错");
         } catch (SocketTimeoutException e) {
-        	remove(user);
+        	//remove(user);
+            new Thread(new removeTask(user)).start();
         	e.printStackTrace();
         	System.out.println("socket超时");
         } catch (Exception e) {
-        	remove(user);
+        	//remove(user);
+            new Thread(new removeTask(user)).start();
         	e.printStackTrace();
             System.out.println("socket异常");
         }
@@ -346,7 +349,8 @@ public class ServerThread extends Thread {
     		    if ( tSocket.isClosed() ) {
     		    	list.remove(i);
     		    } else if ( tu.getDeviceMac() == null ) {
-    		    	remove(tu);
+    		    	//remove(tu);
+                    new Thread(new removeTask(tu)).start();
     		    }
     		    System.out.println("user mac: " + tu.getDeviceMac() + ", req:" + tu.getDeviceReq() + ", mobile_mac:" + tu.getMobileMac() + ",socket isClosed:" + String.valueOf(tSocket.isClosed()) );
     		}
